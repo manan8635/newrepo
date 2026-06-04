@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Shop · GOOD DEAL</title>
+<meta name="description" content="Browse all phones, watches, AirPods and accessories at GOOD DEAL."/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head><body>
+<div id="shell-header"></div>
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><h2 id="shopTitle">All Products</h2><p>Genuine · 50% advance · Free shipping</p></div></div>
+    <div class="filters" id="filters"></div>
+    <div class="prod-grid" id="grid"></div>
+  </div>
+</section>
+<div id="shell-footer"></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+let current = params.get("cat") || "All";
+const cats = ["All","Phones","Watches","Airpods","Accessories"];
+const f = document.getElementById("filters");
+cats.forEach(c=>{
+  f.insertAdjacentHTML("beforeend",`<button class="filter-chip ${c===current?'active':''}" data-c="${c}">${c}</button>`);
+});
+f.addEventListener("click",e=>{
+  if(e.target.dataset.c){current=e.target.dataset.c;render();
+    f.querySelectorAll(".filter-chip").forEach(x=>x.classList.toggle("active",x.dataset.c===current));
+    document.getElementById("shopTitle").textContent = current==="All"?"All Products":current;
+  }
+});
+function render(){
+  const g = document.getElementById("grid");g.innerHTML="";
+  const list = current==="All"?GD_PRODUCTS:GD_PRODUCTS.filter(p=>p.cat===current);
+  if(!list.length){g.innerHTML='<div class="empty"><div class="ico">📭</div><h3>No products</h3></div>';return}
+  list.forEach(p=>{
+    const off = Math.round((1 - p.price/p.mrp)*100);
+    g.insertAdjacentHTML("beforeend",`
+      <div class="prod-card">
+        <a href="product.html?id=${p.id}" class="prod-img">${off>0?`<div class="badge">${off}% OFF</div>`:""}${productImg(p)}</a>
+        <div class="prod-body">
+          <div class="prod-cat">${p.cat}</div>
+          <a href="product.html?id=${p.id}" class="prod-name">${p.name}</a>
+          <div class="prod-rating">${stars(4.5)} <span>(${randCount()})</span></div>
+          <div class="prod-foot">
+            <div class="prod-price">${fmt(p.price)} <small>${fmt(p.mrp)}</small></div>
+            <button class="prod-add" onclick="Cart.add('${p.id}')">+ Add</button>
+          </div>
+        </div>
+      </div>`);
+  });
+}
+document.getElementById("shopTitle").textContent = current==="All"?"All Products":current;
+render();
+</script>
+</body></html>

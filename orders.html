@@ -1,0 +1,46 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>My Orders · GOOD DEAL</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head><body>
+<div id="shell-header"></div>
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><h2>My Orders</h2><p>Track and re-confirm your orders</p></div></div>
+    <div id="ord"></div>
+  </div>
+</section>
+<div id="shell-footer"></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+const list = Orders.list();
+const m = document.getElementById("ord");
+if(!list.length){
+  m.innerHTML='<div class="empty"><div class="ico">📦</div><h3>No orders yet</h3><p>Looks like you haven\'t placed any orders.</p><a href="products.html" class="btn btn-primary">Start Shopping</a></div>';
+}else{
+  m.innerHTML = list.map(o=>{
+    const itemsTxt = o.items.map(i=>{
+      const p = GD_PRODUCTS.find(x=>x.id===i.id);
+      return p ? `${p.emoji} ${p.name} × ${i.qty}` : "";
+    }).join("<br/>");
+    const tgMsg = encodeURIComponent(`Order ${o.id} - checking status. Total ${fmt(o.total)}.`);
+    return `<div class="order-card">
+      <div class="order-head">
+        <div><span class="order-id">#${o.id}</span><span>${new Date(o.date).toLocaleString('en-IN')}</span></div>
+        <span class="order-status">${o.status}</span>
+      </div>
+      <div class="order-items">${itemsTxt}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:13px;color:var(--muted)">Total: <b style="color:var(--text)">${fmt(o.total)}</b> · Paid: <b style="color:var(--accent-2)">${fmt(o.payNow)}</b></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">${o.payMode==='full'?'Full payment':'50% advance'} · Ship to: ${o.customer.city||''}</div>
+        </div>
+        <a href="${GD_CONFIG.telegram}?text=${tgMsg}" target="_blank" class="btn btn-outline">📨 Contact on Telegram</a>
+      </div>
+    </div>`;
+  }).join("");
+}
+</script>
+</body></html>

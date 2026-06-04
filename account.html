@@ -1,0 +1,100 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>My Account · GOOD DEAL</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head><body>
+<div id="shell-header"></div>
+<section class="section">
+  <div class="container" id="acc"></div>
+</section>
+<div id="shell-footer"></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+const acc = document.getElementById("acc");
+function render(){
+  const u = Auth.user();
+  if(!u){
+    acc.innerHTML = `
+      <div class="auth-wrap">
+        <h1>Welcome to GOOD DEAL</h1>
+        <p class="sub">Login or create an account to track orders.</p>
+        <div class="auth-tabs">
+          <div class="auth-tab active" data-tab="login">Login</div>
+          <div class="auth-tab" data-tab="signup">Sign Up</div>
+        </div>
+        <div id="formArea"></div>
+      </div>`;
+    let mode="login";
+    const formArea = document.getElementById("formArea");
+    function paint(){
+      if(mode==="login"){
+        formArea.innerHTML = `
+          <div class="form-grid">
+            <div><label>Email or Phone</label><input id="lEmail" placeholder="you@email.com or 9876543210"/></div>
+            <button class="btn btn-primary btn-block btn-lg" onclick="doLogin()">Login</button>
+          </div>`;
+      } else {
+        formArea.innerHTML = `
+          <div class="form-grid">
+            <div><label>Full Name</label><input id="sName"/></div>
+            <div class="form-row">
+              <div><label>Phone</label><input id="sPhone"/></div>
+              <div><label>Email</label><input id="sEmail"/></div>
+            </div>
+            <div><label>Address</label><textarea id="sAddr"></textarea></div>
+            <div class="form-row">
+              <div><label>City</label><input id="sCity"/></div>
+              <div><label>Pincode</label><input id="sPin"/></div>
+            </div>
+            <button class="btn btn-primary btn-block btn-lg" onclick="doSignup()">Create Account</button>
+          </div>`;
+      }
+    }
+    document.querySelectorAll(".auth-tab").forEach(t=>t.addEventListener("click",()=>{
+      mode = t.dataset.tab;
+      document.querySelectorAll(".auth-tab").forEach(x=>x.classList.toggle("active",x===t));
+      paint();
+    }));
+    paint();
+  } else {
+    acc.innerHTML = `
+      <div class="section-head"><div><h2>My Profile</h2><p>Manage your details</p></div><button class="btn btn-outline" onclick="if(confirm('Logout?'))Auth.logout()">Logout</button></div>
+      <div class="panel" style="max-width:640px">
+        <div class="form-grid">
+          <div><label>Full Name</label><input id="e_name" value="${u.name||''}"/></div>
+          <div class="form-row">
+            <div><label>Phone</label><input id="e_phone" value="${u.phone||''}"/></div>
+            <div><label>Email</label><input id="e_email" value="${u.email||''}"/></div>
+          </div>
+          <div><label>Address</label><textarea id="e_addr">${u.address||''}</textarea></div>
+          <div class="form-row">
+            <div><label>City</label><input id="e_city" value="${u.city||''}"/></div>
+            <div><label>Pincode</label><input id="e_pin" value="${u.pin||''}"/></div>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="saveProfile()">Save Changes</button>
+          <a href="orders.html" class="btn btn-outline btn-block">📦 View My Orders</a>
+        </div>
+      </div>`;
+  }
+}
+function doSignup(){
+  const g=id=>document.getElementById(id).value.trim();
+  const d={name:g("sName"),phone:g("sPhone"),email:g("sEmail"),address:g("sAddr"),city:g("sCity"),pin:g("sPin")};
+  if(!d.name||!d.phone){toast("Name & phone required");return;}
+  Auth.signup(d);toast("Account created ✓");render();
+}
+function doLogin(){
+  const v = document.getElementById("lEmail").value.trim();
+  if(Auth.login(v,v)){toast("Logged in ✓");render();}
+  else toast("No account found. Please sign up.");
+}
+function saveProfile(){
+  const g=id=>document.getElementById(id).value.trim();
+  Auth.signup({name:g("e_name"),phone:g("e_phone"),email:g("e_email"),address:g("e_addr"),city:g("e_city"),pin:g("e_pin")});
+  toast("Profile updated ✓");
+}
+render();
+</script>
+</body></html>

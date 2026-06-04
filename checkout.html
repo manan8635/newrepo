@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Checkout · GOOD DEAL</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head><body>
+<div id="shell-header"></div>
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><h2>Checkout</h2><p>Almost there 🚀</p></div></div>
+    <div id="coMount"></div>
+  </div>
+</section>
+
+<div class="modal-back" id="payModal">
+  <div class="modal">
+    <h2 style="font-size:24px;font-weight:800;margin-bottom:6px">Payment Instructions</h2>
+    <p style="color:var(--muted);font-size:14px" id="payMsg">Complete advance payment to confirm order.</p>
+    <div class="qr-box">
+      <img alt="UPI QR" id="qrImg"/>
+    </div>
+    <p style="font-size:13px;color:var(--muted)">Kotak Mahindra Bank · Scan with any UPI app</p>
+    <p style="font-size:13px;margin-top:8px">Order ID: <b id="oidTxt"></b></p>
+    <a id="tgBtn" class="btn btn-primary btn-block btn-lg" style="margin-top:18px" target="_blank">📨 Continue to Telegram</a>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px">Send payment screenshot & UTR number on Telegram to complete your order.</p>
+    <a href="orders.html" class="btn btn-ghost" style="margin-top:10px;display:inline-block">View My Orders</a>
+  </div>
+</div>
+
+<div id="shell-footer"></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+const items = Cart.get();
+const sub = Cart.subtotal();
+const mount = document.getElementById("coMount");
+if(!items.length){
+  mount.innerHTML='<div class="empty"><div class="ico">🛒</div><h3>Cart is empty</h3><a href="products.html" class="btn btn-primary">Shop Now</a></div>';
+}else{
+  const u = Auth.user() || {};
+  let itemsHTML = items.map(i=>{
+    const p = GD_PRODUCTS.find(x=>x.id===i.id);
+    return `<div class="summary-row"><span>${p.emoji} ${p.name} × ${i.qty}</span><span>${fmt(p.price*i.qty)}</span></div>`;
+  }).join("");
+  mount.innerHTML = `
+  <div class="cart-grid">
+    <div>
+      <div class="panel">
+        <h3>Delivery Details</h3>
+        <div class="form-grid">
+          <div class="form-row">
+            <div><label>Full Name</label><input id="f_name" value="${u.name||''}" placeholder="Your name"/></div>
+            <div><label>Phone Number</label><input id="f_phone" value="${u.phone||''}" placeholder="10-digit mobile"/></div>
+          </div>
+          <div><label>Email</label><input id="f_email" value="${u.email||''}" placeholder="you@email.com"/></div>
+          <div><label>Address</label><textarea id="f_addr" placeholder="House, street, area">${u.address||''}</textarea></div>
+          <div class="form-row">
+            <div><label>City</label><input id="f_city" value="${u.city||''}"/></div>
+            <div><label>Pincode</label><input id="f_pin" value="${u.pin||''}"/></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Payment Method</h3>
+        <label class="pay-opt selected" id="opt50">
+          <input type="radio" name="pay" value="50" checked/>
+          <div class="pay-opt-info"><b>50% Advance Payment</b><span>Pay ₹${(sub/2).toLocaleString('en-IN')} now, rest on delivery</span></div>
+        </label>
+        <label class="pay-opt" id="optFull">
+          <input type="radio" name="pay" value="full"/>
+          <div class="pay-opt-info"><b>Full Payment Online</b><span>Pay full amount now, get instant discount</span></div>
+          <div class="discount-badge">7% OFF</div>
+        </label>
+      </div>
+    </div>
+    <div class="summary">
+      <h3>Order Summary</h3>
+      ${itemsHTML}
+      <div style="border-top:1px solid var(--border);margin:12px 0"></div>
+      <div class="summary-row"><span>Subtotal</span><span id="sumSub">${fmt(sub)}</span></div>
+      <div class="summary-row" id="discRow" style="display:none"><span>Discount (7%)</span><span class="green" id="sumDisc">- ₹0</span></div>
+      <div class="summary-row"><span>Shipping</span><span class="green">FREE</span></div>
+      <div class="summary-row total"><span>Total</span><span id="sumTotal">${fmt(sub)}</span></div>
+      <div class="summary-row" id="advRow"><span>Pay Now (50%)</span><span style="color:var(--accent);font-weight:800" id="sumAdv">${fmt(Math.round(sub/2))}</span></div>
+      <button class="btn btn-primary btn-block btn-lg" style="margin-top:14px" onclick="place()">🔒 Place Order</button>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px">By placing order you agree to our terms</p>
+    </div>
+  </div>`;
+
+  document.querySelectorAll(".pay-opt").forEach(o=>{
+    o.addEventListener("click",()=>{
+      document.querySelectorAll(".pay-opt").forEach(x=>x.classList.remove("selected"));
+      o.classList.add("selected");
+      o.querySelector("input").checked = true;
+      recalc();
+    });
+  });
+}
+
+function recalc(){
+  const pay = document.querySelector('input[name="pay"]:checked').value;
+  const disc = pay==="full" ? Math.round(sub*0.07) : 0;
+  const total = sub - disc;
+  document.getElementById("discRow").style.display = disc?"flex":"none";
+  document.getElementById("sumDisc").textContent = "- " + fmt(disc);
+  document.getElementById("sumTotal").textContent = fmt(total);
+  if(pay==="full"){
+    document.getElementById("advRow").innerHTML = `<span>Pay Now (Full)</span><span style="color:var(--accent);font-weight:800">${fmt(total)}</span>`;
+  } else {
+    document.getElementById("advRow").innerHTML = `<span>Pay Now (50%)</span><span style="color:var(--accent);font-weight:800">${fmt(Math.round(total/2))}</span>`;
+  }
+}
+
+function place(){
+  const get = id=>document.getElementById(id).value.trim();
+  const data = {name:get("f_name"),phone:get("f_phone"),email:get("f_email"),address:get("f_addr"),city:get("f_city"),pin:get("f_pin")};
+  if(!data.name||!data.phone||!data.address||!data.pin){toast("Please fill all required fields");return;}
+  // save user if not exists
+  if(!Auth.user()) Auth.signup(data);
+  const pay = document.querySelector('input[name="pay"]:checked').value;
+  const disc = pay==="full" ? Math.round(sub*0.07) : 0;
+  const total = sub - disc;
+  const payNow = pay==="full" ? total : Math.round(total/2);
+  const oid = Orders.genId();
+  Orders.add({
+    id:oid, date:new Date().toISOString(), items:Cart.get(),
+    subtotal:sub, discount:disc, total, payNow, payMode:pay,
+    customer:data, status:"Awaiting Payment"
+  });
+  Cart.set([]);
+  // show modal
+  const msg = pay==="full"
+    ? `Complete full payment (<b style="color:var(--accent)">${fmt(payNow)}</b>) to confirm your order.`
+    : `Complete 50% advance payment (<b style="color:var(--accent)">${fmt(payNow)}</b>) to confirm your order.`;
+  document.getElementById("payMsg").innerHTML = msg;
+  document.getElementById("oidTxt").textContent = oid;
+  document.getElementById("qrImg").src = "assets/paymentqr.jpg";
+  const tgMsg = encodeURIComponent(`Hi, I just placed Order ${oid} on GOOD DEAL for ${fmt(total)}. Sending payment of ${fmt(payNow)} now.`);
+  document.getElementById("tgBtn").href = `${GD_CONFIG.telegram}?text=${tgMsg}`;
+  document.getElementById("payModal").classList.add("open");
+}
+</script>
+</body></html>

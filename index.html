@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GOOD DEAL · India's Trusted Electronics Store</title>
+<meta name="description" content="Genuine smartphones, smartwatches, AirPods and accessories at unbeatable prices. Pay 50% advance, free shipping all over India."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<div id="shell-header"></div>
+
+<section class="hero">
+  <div class="container hero-inner">
+    <div>
+      <h1>Premium Tech <br/><span class="grad">at the best price</span><br/>in India.</h1>
+      <p>Original phones, watches and AirPods · Pay 50% advance, rest on delivery · Free shipping across India.</p>
+      <div class="hero-cta">
+        <a href="products.html" class="btn btn-primary btn-lg">Shop Now →</a>
+        <a href="#categories" class="btn btn-outline btn-lg">Browse Categories</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b>10K+</b><span>Happy Customers</span></div>
+        <div class="hero-stat"><b>100%</b><span>Genuine Products</span></div>
+        <div class="hero-stat"><b>24/7</b><span>Telegram Support</span></div>
+      </div>
+    </div>
+    <div class="hero-visual"><div class="float">📱</div></div>
+  </div>
+</section>
+
+<section class="section" id="categories">
+  <div class="container">
+    <div class="section-head"><div><h2>Shop by Category</h2><p>Find what you need, fast.</p></div></div>
+    <div class="cat-grid">
+      <a href="products.html?cat=Phones" class="cat-card"><div class="ico">📱</div><h3>Phones</h3><span>Latest smartphones</span></a>
+      <a href="products.html?cat=Watches" class="cat-card"><div class="ico">⌚</div><h3>Watches</h3><span>Smart & classic</span></a>
+      <a href="products.html?cat=Airpods" class="cat-card"><div class="ico">🎧</div><h3>Airpods</h3><span>Wireless audio</span></a>
+      <a href="products.html?cat=Accessories" class="cat-card"><div class="ico">🔌</div><h3>Accessories</h3><span>Chargers & more</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><h2>Featured Deals</h2><p>Hand-picked best sellers</p></div><a href="products.html" class="btn btn-ghost">View all →</a></div>
+    <div class="prod-grid" id="featured"></div>
+  </div>
+</section>
+
+<div id="shell-footer"></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+const g = document.getElementById("featured");
+GD_PRODUCTS.filter(p=>p.featured).forEach(p=>{
+  const off = Math.round((1 - p.price/p.mrp)*100);
+  g.insertAdjacentHTML("beforeend",`
+    <div class="prod-card">
+      <a href="product.html?id=${p.id}" class="prod-img">
+        ${off>0?`<div class="badge">${off}% OFF</div>`:""}
+        ${productImg(p)}
+      </a>
+      <div class="prod-body">
+        <div class="prod-cat">${p.cat}</div>
+        <a href="product.html?id=${p.id}" class="prod-name">${p.name}</a>
+        <div class="prod-rating">${stars(4.5)} <span>(${randCount()})</span></div>
+        <div class="prod-foot">
+          <div class="prod-price">${fmt(p.price)} <small>${fmt(p.mrp)}</small></div>
+          <button class="prod-add" onclick="Cart.add('${p.id}')">+ Add</button>
+        </div>
+      </div>
+    </div>`);
+});
+</script>
+</body>
+</html>
